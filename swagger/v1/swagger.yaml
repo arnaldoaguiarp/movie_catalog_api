@@ -1,0 +1,203 @@
+openapi: 3.0.1
+info:
+  title: API V1
+  version: v1
+paths:
+  "/api/v1/movies":
+    get:
+      summary: List all movies
+      tags:
+        - Movies
+      parameters:
+        - name: year
+          in: query
+          schema:
+            type: integer
+          description: 'Release year (e.g. 2020)'
+        - name: genre
+          in: query
+          schema:
+            type: string
+          description: 'Genre of the movie (partial search, e.g. “Dram” for “Drama”)'
+        - name: country
+          in: query
+          schema:
+            type: string
+          description: 'Country of origin of the movie (partial search, e.g. “United” for “United States”)'
+        - name: title
+          in: query
+          schema:
+            type: string
+          description: 'Movie title (partial search, e.g. “Incep” for “Inception”)'
+      responses:
+        '200':
+          description: Films successfully listed
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      format: uuid
+                    title:
+                      type: string
+                    genre:
+                      type: string
+                    year:
+                      type: integer
+                    country:
+                      type: string
+                    published_at:
+                      type: string
+                      format: date
+                    description:
+                      type: string
+                  required:
+                    - id
+                    - title
+                    - genre
+                    - year
+                    - country
+                    - published_at
+                    - description
+        '400':
+          description: Invalid parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'Invalid parameter'
+
+    post:
+      summary: Create a new movie
+      tags:
+        - Movies
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                genre:
+                  type: string
+                year:
+                  type: integer
+                country:
+                  type: string
+                published_at:
+                  type: string
+                  format: date
+                description:
+                  type: string
+              required:
+                - title
+                - genre
+                - year
+                - country
+                - published_at
+                - description
+      responses:
+        '201':
+          description: Successfully created film
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  title:
+                    type: string
+                  genre:
+                    type: string
+                  year:
+                    type: integer
+                  country:
+                    type: string
+                  published_at:
+                    type: string
+                    format: date
+                  description:
+                    type: string
+        '422':
+          description: Error processing the request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Title can't be blank", "Year must be an integer"]
+  "/api/v1/movies/import":
+    post:
+      summary: Import movies from a CSV file
+      tags:
+        - Movies
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: CSV file with movie data
+      responses:
+        '200':
+          description: Successfully imported films
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Successfully imported films'
+                  imported_count:
+                    type: integer
+                    example: 10
+        '400':
+          description: File not supplied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: 'File not supplied'
+        '422':
+          description: Error processing CSV file
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Error processing CSV file'
+                  errors:
+                    type: array
+                    items:
+                      type: string
+                    example: ['Line 1: missing title', 'Line 2: invalid year']
+servers:
+  - url: http://127.0.0.1:3000
+    variables:
+      defaultHost:
+        default: www.example.com
