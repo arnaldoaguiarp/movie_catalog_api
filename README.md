@@ -150,11 +150,18 @@ Para rodar os testes de unidade e integração:
 ```bash
 rspec
 ```
+Para gerar a documentação Swagger: 
+
+```bash 
+rake rswag:specs:swaggerize 
+``` 
+O arquivo `swagger.yaml` será gerado em `swagger/v1`.
 
 ## Possíveis Melhorias 🔄
 
-Para demonstração de pensamento crítico sobre melhorias futuras, aqui estão algumas sugestões de aprimoramentos:
+Adotando um pensamento crítico sobre melhorias futuras, aqui estão algumas sugestões de aprimoramentos:
 
+- **Operações CRUD Adicionais**: Implementar endpoints para **atualização** e **remoção** de filmes, permitindo uma manipulação mais completa dos dados e garantindo maior flexibilidade para usuários.
 - **Cache de Consultas**: Implementar caching para melhorar a performance ao listar filmes com filtros dinâmicos.
 - **Paginação**: Adicionar paginação à listagem de filmes para otimizar a resposta em catálogos extensos.
 - **Autenticação e Autorização**: Integrar autenticação para garantir que apenas usuários autorizados possam criar ou importar filmes.
