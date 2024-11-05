@@ -171,6 +171,9 @@ paths:
                   imported_count:
                     type: integer
                     example: 10
+                  already_imported_count:
+                    type: integer
+                    example: 5
         '400':
           description: File not supplied
           content:

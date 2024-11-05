@@ -67,7 +67,8 @@ module Api
                  status: :unprocessable_entity
         else
           Rails.logger.info "Successful import: #{result[:imported_count]} imported films."
-          render json: { message: 'Film import successful', imported_count: result[:imported_count] },
+          render json: { message: 'Film import successful', imported_count: result[:imported_count],
+                         already_imported_count: result[:already_imported_count] },
                  status: :ok
         end
       end

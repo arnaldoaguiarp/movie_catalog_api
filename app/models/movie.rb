@@ -13,16 +13,10 @@ class Movie < ApplicationRecord
     return if published_at.nil?
 
     # Try converting to a valid date
-    parsed_date = begin
+    begin
       Date.parse(published_at.to_s)
-    rescue StandardError
-      nil
-    end
-    if parsed_date.nil?
+    rescue ArgumentError
       errors.add(:published_at, 'is not a valid date')
-    else
-      # If the date is valid, assign it
-      self.published_at = parsed_date
     end
   end
 end

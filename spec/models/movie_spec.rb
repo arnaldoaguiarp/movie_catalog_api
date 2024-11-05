@@ -41,12 +41,6 @@ RSpec.describe Movie, type: :model do
         subject.published_at = '2020-01-01'
         expect(subject).to be_valid
       end
-
-      # it 'is invalid with an incorrect date format for published_at' do
-      #  subject.published_at = 'invalid-date'
-      #  expect(subject).not_to be_valid
-      #  expect(subject.errors[:published_at]).to include('is not a valid date')
-      # end
     end
 
     context 'uniqueness validation for title and year' do

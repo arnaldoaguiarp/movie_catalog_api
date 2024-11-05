@@ -2,7 +2,7 @@ require 'swagger_helper'
 
 RSpec.describe 'Movies API', type: :request do
   path '/api/v1/movies' do
-    get 'Lista todos os filmes' do
+    get 'List all movies' do
       tags 'Movies'
       produces 'application/json'
 
@@ -128,9 +128,10 @@ RSpec.describe 'Movies API', type: :request do
         schema type: :object,
                properties: {
                  message: { type: :string, example: 'Successfully imported films' },
-                 imported_count: { type: :integer, example: 10 }
+                 imported_count: { type: :integer, example: 10 },
+                 already_imported_count: { type: :integer, example: 5 }
                },
-               required: %w[message imported_count]
+               required: %w[message imported_count already_imported_count]
 
         run_test!
       end

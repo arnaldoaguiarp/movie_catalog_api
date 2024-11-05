@@ -1,4 +1,3 @@
-# app/services/csv_import_service.rb
 require 'csv'
 require 'logger'
 require 'date'
@@ -11,6 +10,7 @@ class CsvImportService
 
   def import
     imported_count = 0
+    already_imported_count = 0
     errors = []
 
     begin
@@ -20,7 +20,7 @@ class CsvImportService
       @logger.info("Standardized headers: #{csv_table.headers.inspect}")
     rescue CSV::MalformedCSVError => e
       @logger.error("Error processing CSV: #{e.message}")
-      return { imported_count: 0, errors: ["Error processing CSV file: #{e.message}"] }
+      return { imported_count: 0, already_imported_count: 0, errors: ["Error processing CSV file: #{e.message}"] }
     end
 
     header_mapping = {
@@ -34,36 +34,35 @@ class CsvImportService
 
     line_number = 1
     csv_table.each do |row|
-      @logger.info("Line #{line_number} original: #{row.to_h.inspect}")
-
-      # Maps the data to the attributes of the Movie model
       movie_data = prepare_movie_data(row.to_h, header_mapping)
-      @logger.info("Line #{line_number} after mapping: #{movie_data.inspect}")
-
-      # Checks mandatory fields
       missing_fields = required_fields_missing(movie_data)
+
       if missing_fields.any?
         errors << "Line #{line_number}: Invalid record - missing fields: #{missing_fields.join(', ')}"
         line_number += 1
         next
       end
 
-      # Search for or create a new movie record
-      movie = Movie.find_or_initialize_by(title: movie_data[:title], year: movie_data[:year])
-      movie.assign_attributes(movie_data)
+      # Check that the movie already exists before creating a new one
+      existing_movie = Movie.find_by(title: movie_data[:title], year: movie_data[:year])
 
-      # Try saving and log any errors
-      unless movie.save
-        errors << "Line #{line_number}: Error saving the movie '#{movie_data[:title]}' - #{movie.errors.full_messages.join(', ')}"
-        line_number += 1
-        next
+      if existing_movie
+        # Increases the count of imported movies
+        already_imported_count += 1
+        @logger.info("Movie already imported: #{movie_data[:title]} (Year: #{movie_data[:year]})")
+      else
+        # Creates a new movie and saves it, counting only the new records
+        movie = Movie.new(movie_data)
+        if movie.save
+          imported_count += 1
+        else
+          errors << "Line #{line_number}: Error saving the movie '#{movie_data[:title]}' - #{movie.errors.full_messages.join(', ')}"
+        end
       end
-
-      imported_count += 1
       line_number += 1
     end
 
-    { imported_count: imported_count, errors: errors }
+    { imported_count: imported_count, already_imported_count: already_imported_count, errors: errors }
   end
 
   private

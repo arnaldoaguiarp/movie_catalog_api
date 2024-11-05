@@ -97,7 +97,7 @@ RSpec.describe 'API::V1::Movies', type: :request do
 
         expect(response).to have_http_status(:unprocessable_entity)
         json_response = JSON.parse(response.body)
-        expect(json_response['error']).to eq('Filme já existente com o mesmo título e ano')
+        expect(json_response['error']).to eq('Existing movie with the same title and year')
       end
 
       it 'returns validation errors for invalid data' do
@@ -120,18 +120,32 @@ RSpec.describe 'API::V1::Movies', type: :request do
 
         expect(response).to have_http_status(:ok)
         json_response = JSON.parse(response.body)
-        expect(json_response['message']).to eq('Importação de filmes realizada com sucesso')
+        expect(json_response['message']).to eq('Film import successful')
         expect(json_response['imported_count']).to be > 0
+        expect(json_response).to have_key('already_imported_count')
+      end
+
+      it 'correctly identifies already imported movies' do
+        # First import
+        post '/api/v1/movies/import', params: { file: file }, headers: headers
+        expect(response).to have_http_status(:ok)
+
+        # Second import - Must identify all as already imported
+        post '/api/v1/movies/import', params: { file: file }, headers: headers
+        json_response = JSON.parse(response.body)
+
+        expect(json_response['imported_count']).to eq(0)
+        expect(json_response['already_imported_count']).to eq(1)
       end
     end
 
     context 'with a missing file' do
       it 'returns a bad request error when no file is provided' do
-        post '/api/v1/movies/import', headers: headers # remove o parâmetro `file`
+        post '/api/v1/movies/import', headers: headers
 
         expect(response).to have_http_status(:bad_request)
         json_response = JSON.parse(response.body)
-        expect(json_response['error']).to eq('Arquivo não fornecido')
+        expect(json_response['error']).to eq('File not supplied')
       end
     end
 
@@ -145,12 +159,12 @@ RSpec.describe 'API::V1::Movies', type: :request do
 
         expect(response).to have_http_status(:unprocessable_entity)
         json_response = JSON.parse(response.body)
-        expect(json_response['message']).to eq('Falha na importação. Nenhum registro foi importado.')
+        expect(json_response['message']).to eq('Import failed. No records were imported.')
         expect(json_response['errors']).to be_an(Array)
         expect(json_response['errors']).not_to be_empty
 
-        # Verifica que nenhum filme foi importado
-        expect(Movie.count).to eq(2) # Apenas os filmes do setup inicial devem estar presentes
+        # Checks that only the movies from the initial setup are present
+        expect(Movie.count).to eq(2)
       end
     end
   end
